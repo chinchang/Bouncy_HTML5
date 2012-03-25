@@ -21,7 +21,7 @@ function Ball(){
 }
 
 Ball.prototype.draw = function(context){
-	context.strokeStyle = "#CCC";
+	context.strokeStyle = "#BBB";
     context.fillStyle = "#FFF";
 	context.beginPath();
 	context.arc(0, 0, this.radius, 0, Math.PI*2, true);
@@ -48,7 +48,7 @@ Ball.prototype.update = function(dt){
 	if(cond1) this.x = canvas.width - this.radius;
 	if(cond2) this.x = this.radius;
 	if(cond1 || cond2)
-		this.speed_x = -(this.speed_x/Math.abs(this.speed_x)) * (Math.round(Math.random() * 200) + 100);
+		this.speed_x = -this.speed_x;
 	if(this.y + this.radius + this.speed_y * dt > canvas.height){ 
 		score = 0;
 		this.speed_y = -this.speed_y * cor;
@@ -148,7 +148,7 @@ function onClick(e){
 	if(ball.containsPoint(e.offsetX, e.offsetY)){
 		score++;
 		ball.speed_y = -800;
-		ball.speed_x = 500 - Math.random() * 1000;
+		ball.speed_x = 600 - Math.random() * 1200;
 		if(ball.is_on_floor) ball.is_on_floor = false;
 	}
 }
