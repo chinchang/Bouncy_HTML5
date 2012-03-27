@@ -21,7 +21,7 @@ function Ball(){
 }
 
 Ball.prototype.draw = function(context){
-	context.strokeStyle = "#BBB";
+	context.strokeStyle = "#AAA";
     context.fillStyle = "#FFF";
 	context.beginPath();
 	context.arc(0, 0, this.radius, 0, Math.PI*2, true);
@@ -49,14 +49,13 @@ Ball.prototype.update = function(dt){
 	if(cond2) this.x = this.radius;
 	if(cond1 || cond2)
 		this.speed_x = -this.speed_x;
-	if(this.y + this.radius + this.speed_y * dt > canvas.height){ 
+	if(this.y + this.radius + this.speed_y * dt > canvas.height - ground_height){ 
 		score = 0;
 		this.speed_y = -this.speed_y * cor;
 		if(Math.abs(this.speed_y * dt) < epsilon){
 			this.speed_y = 0;
-			this.y = canvas.height - this.radius;
+			this.y = canvas.height - ground_height - this.radius;
 			this.is_on_floor = true;
-			console.log('on floor');
 		}
 	}
 }
@@ -74,7 +73,7 @@ var ctx = null;
 var buffer_canvas = null;
 var buffer_canvas_ctx = null;
 var game_objects = [];
-
+var ground_height = 50;
 
 var ball;
 var gravity = 2000;
@@ -100,9 +99,31 @@ function init(e){
 	canvas.strokeStyle = "#000";
 
 	ball = new Ball();
-	ball.x = ball.y = 80;
+	ball.x = 320; 
+	ball.y = 80;
 
 	addChild(ball);
+
+	// ball shadow
+	var ball_shadow = {
+		x: 0,
+		y: 0,
+		scale_x: 1,
+		scale_y: 0.3,
+		update: function(dt){
+			this.x = ball.x;
+			this.y = canvas.height - ground_height;
+		},
+
+		draw: function(context){
+		    context.fillStyle = "#DDD";
+			context.beginPath();
+			context.arc(0, 0, ball.radius, 0, Math.PI*2, true);
+			context.closePath();
+			context.fill();
+		}
+	};
+	addChild(ball_shadow);
 
 	// fps text
 	var fps_text = {
@@ -121,6 +142,7 @@ function init(e){
 	};
 	addChild(fps_text);
 
+
 	// score text
 	var score_text = {
 		x: 260,
@@ -132,6 +154,9 @@ function init(e){
 		}
 	};
 	addChild(score_text);
+	
+	// bring ball forward in display list
+	setChildIndex(ball, game_objects.length - 1)
 
 	canvas.addEventListener('mousedown', onClick);
 
@@ -184,7 +209,9 @@ function draw(){
 		var obj = game_objects[i];
 		if(typeof obj.draw == 'function'){
 			context.save();
-			context.translate(obj.x, obj.y); 
+			if(!(isNaN(obj.x) || isNaN(obj.y))) context.translate(obj.x, obj.y); 
+			if(!(isNaN(obj.scale_x) || isNaN(obj.scale_y))) context.scale(obj.scale_x, obj.scale_y); 
+			// if(!isNaN(obj.rotation)) context.rotation(obj.rotation); 
 			obj.draw(context); 
 			context.restore();
 		}
@@ -201,6 +228,17 @@ function addChild(c){
 	game_objects.push(c);
 }
 
+function setChildIndex(child, i){
+	for(var j=0; j<game_objects.length; j++){
+		if(game_objects[j] === child && j != i){
+				game_objects.splice(j, 1);
+			// if(i > j)
+				game_objects.splice(i, 0, child);
+			// else
+				// game_objects.splice(i, 0, child);
+		}
+	}
+}
 
 
 })();
