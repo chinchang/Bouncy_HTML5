@@ -231,11 +231,8 @@ function addChild(c){
 function setChildIndex(child, i){
 	for(var j=0; j<game_objects.length; j++){
 		if(game_objects[j] === child && j != i){
-				game_objects.splice(j, 1);
-			// if(i > j)
-				game_objects.splice(i, 0, child);
-			// else
-				// game_objects.splice(i, 0, child);
+			game_objects.splice(j, 1);
+			game_objects.splice(i, 0, child);
 		}
 	}
 }
