@@ -30,6 +30,14 @@ Ball.prototype.draw = function(context){
 	context.closePath();
 	context.fill();
 	context.stroke();
+	// add a shine
+	context.beginPath();
+    context.fillStyle = "#df7c78";
+    context.save();
+    context.scale(1, 0.6);
+	context.arc(0, -40, this.radius-20, 0, Math.PI*2, true);
+	context.restore();
+	context.fill();
 }
 
 Ball.prototype.update = function(dt){
@@ -70,6 +78,39 @@ Ball.prototype.containsPoint = function(x, y){
 	var dy = this.y - y;
 	return Math.sqrt(dx * dx + dy * dy) < this.radius;
 }
+
+/*
+ * Shadow
+ * @param	obj 	reference to an object to follow
+ */
+function Shadow(obj){ console.log('c',obj);
+	this.x = 0;
+	this.y = 0;
+	this.scale_x = 1;
+	this.scale_y = 0.3;
+	this.object = obj;
+}
+
+Shadow.prototype.update = function(dt){
+	this.x = this.object.x;
+	this.y = canvas.height - ground_height;
+	// shadow scale is inversely proportional to distance between
+	// ball and shadow
+	console.log(this.object)
+	s_x =  1 - Math.abs(this.object.y + this.object.radius - this.y) / this.y;
+	s_y =  s_x * 0.3;
+	this.scale_x = s_x;
+	this.scale_y = s_y;
+},
+
+Shadow.prototype.draw = function(context){
+    context.fillStyle = "#305558";
+	context.beginPath();
+	context.arc(0, 0, this.object.radius, 0, Math.PI*2, true);
+	context.closePath();
+	context.fill();
+}
+
 
 /*
  * Particle
@@ -122,7 +163,7 @@ var buffer_canvas_ctx = null;
 var game_objects = [];
 var ground_height = 50;
 
-var ball;
+var ball1, ball2;
 var gravity = 2000;
 var epsilon = 0.5;
 var cor = 0.7;
@@ -145,38 +186,20 @@ function init(e){
 
 	canvas.strokeStyle = "#000";
 
-	ball = new Ball();
-	ball.x = 320; 
-	ball.y = 80;
+	ball1 = new Ball();
+	ball1.x = 320; 
+	ball1.y = 80;
 
-	addChild(ball);
+	addChild(ball1);
 
-	// ball shadow
-	var ball_shadow = {
-		x: 0,
-		y: 0,
-		scale_x: 1,
-		scale_y: 0.3,
-		update: function(dt){
-			this.x = ball.x;
-			this.y = canvas.height - ground_height;
-			// shadow scale is inversely proportional to distance between
-			// ball and shadow
-			s_x =  1 - Math.abs(ball.y + ball.radius - this.y) / this.y;
-			s_y =  s_x * 0.3;
-			this.scale_x = s_x;
-			this.scale_y = s_y;
-		},
+	ball2 = new Ball();
+	ball2.x = 50; 
+	ball2.y = 80;
 
-		draw: function(context){
-		    context.fillStyle = "#305558";
-			context.beginPath();
-			context.arc(0, 0, ball.radius, 0, Math.PI*2, true);
-			context.closePath();
-			context.fill();
-		}
-	};
-	addChild(ball_shadow);
+	addChild(ball2);
+
+	addChild(new Shadow(ball1));
+	addChild(new Shadow(ball2));
 
 	// fps text
 	var fps_text = {
@@ -220,8 +243,9 @@ function init(e){
 	};
 	addChild(score_text);
 	
-	// bring ball forward in display list
-	setChildIndex(ball, game_objects.length - 1)
+	// bring balls forward in display list
+	setChildIndex(ball1, game_objects.length - 1)
+	setChildIndex(ball2, game_objects.length - 1)
 
 	canvas.addEventListener('mousedown', onClick);
 
@@ -235,11 +259,17 @@ function gameLoop(){
 }
 
 function onClick(e){
-	if(ball.containsPoint(e.offsetX, e.offsetY)){
+	if(ball1.containsPoint(e.offsetX, e.offsetY)){
 		score++;
-		ball.speed_y = -800;
-		ball.speed_x = 600 - Math.random() * 1200;
-		if(ball.is_on_floor) ball.is_on_floor = false;
+		ball1.speed_y = -800;
+		ball1.speed_x = 600 - Math.random() * 1200;
+		if(ball1.is_on_floor) ball1.is_on_floor = false;
+	}
+	else if(ball2.containsPoint(e.offsetX, e.offsetY)){
+		score++;
+		ball2.speed_y = -800;
+		ball2.speed_x = 600 - Math.random() * 1200;
+		if(ball2.is_on_floor) ball2.is_on_floor = false;
 	}
 }
 
