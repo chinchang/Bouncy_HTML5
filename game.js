@@ -244,9 +244,9 @@ function onClick(e){
 }
 
 /*
-Game's update function called from gameloop
-Updates all game entities
-*/
+ * Game's update function called from gameloop
+ * Updates all game entities
+ */
 function update(){
 	// get the time past the previous frame
 	var current_time = new Date().getTime();
@@ -263,9 +263,9 @@ function update(){
 }
 
 /*
-Game's draw function called from gameloop
-Draws all game entities
-*/
+ * Game's draw function called from gameloop
+ * Draws all game entities
+ */
 function draw(){
 	clearScreen(buffer_canvas_ctx, '#EEE');
 	// use double buffering technique to remove flickr :)
@@ -277,7 +277,6 @@ function draw(){
 			if(!(isNaN(obj.x) || isNaN(obj.y))) context.translate(obj.x, obj.y); 
 			if(!(isNaN(obj.scale_x) || isNaN(obj.scale_y))) context.scale(obj.scale_x, obj.scale_y); 
 			if(!isNaN(obj.alpha)) context.globalAlpha = obj.alpha; 
-			// if(!isNaN(obj.rotation)) context.rotation(obj.rotation); 
 			obj.draw(context);
 			context.restore();
 		}
@@ -295,7 +294,7 @@ function addChild(c){
 }
 
 function removeChild(c){
-	for(var i = 0, l = game_objects.length; i < l; i++)
+	for(var i=0, l=game_objects.length; i<l; i++)
 		if(game_objects[i] === c){
 			delete c;
 			game_objects.splice(i, 1);
@@ -304,7 +303,7 @@ function removeChild(c){
 }
 
 function setChildIndex(child, i){
-	for(var j=0; j<game_objects.length; j++){
+	for(var j=0, l=game_objects.length; j<l; j++){
 		if(game_objects[j] === child && j != i){
 			game_objects.splice(j, 1);
 			game_objects.splice(i, 0, child);
