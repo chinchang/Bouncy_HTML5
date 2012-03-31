@@ -174,6 +174,7 @@ var last_time = 0;
 window.addEventListener('load', init);
 
 function init(e){
+	averagefps = {x: 0, y: 0};
 	canvas = document.getElementById("c");
 	ctx = canvas.getContext('2d');
 	buffer_canvas = document.createElement('canvas')
@@ -206,7 +207,10 @@ function init(e){
 		y: 15,
 		fps: 0,
 		update: function(dt){
-			this.fps = Math.round(1/dt);
+			this.fps = Math.round(1/dt); 
+			if(this.fps !== Infinity){
+				averagefps.x = (averagefps.x * averagefps.y + this.fps) / ++averagefps.y; 
+			}
 		},
 
 		draw: function(context){
@@ -303,9 +307,9 @@ function draw(){
 		var obj = game_objects[i];
 		if(typeof obj.draw == 'function'){
 			context.save();
-			if(!(isNaN(obj.x) || isNaN(obj.y))) context.translate(obj.x, obj.y); 
-			if(!(isNaN(obj.scale_x) || isNaN(obj.scale_y))) context.scale(obj.scale_x, obj.scale_y); 
-			if(!isNaN(obj.alpha)) context.globalAlpha = obj.alpha; 
+			!isNaN(obj.x) && !isNaN(obj.y) && context.translate(obj.x, obj.y); 
+			!isNaN(obj.scale_x) && !isNaN(obj.scale_y) && context.scale(obj.scale_x, obj.scale_y); 
+			!isNaN(obj.alpha) && (context.globalAlpha = obj.alpha); 
 			obj.draw(context);
 			context.restore();
 		}
@@ -323,7 +327,7 @@ function addChild(c){
 }
 
 function removeChild(c){
-	for(var i=0, l=game_objects.length; i<l; i++)
+	for(var i=game_objects.length; i--;)
 		if(game_objects[i] === c){
 			delete c;
 			game_objects.splice(i, 1);
@@ -332,7 +336,7 @@ function removeChild(c){
 }
 
 function setChildIndex(child, i){
-	for(var j=0, l=game_objects.length; j<l; j++){
+	for(var j=-1, l=game_objects.length; ++j<l;){
 		if(game_objects[j] === child && j != i){
 			game_objects.splice(j, 1);
 			game_objects.splice(i, 0, child);
