@@ -23,8 +23,8 @@ function Ball(){
 }
 
 Ball.prototype.draw = function(context){
-	context.strokeStyle = "#AAA";
-    context.fillStyle = "#FFF";
+	context.strokeStyle = "#000";
+    context.fillStyle = "#D5544F";
 	context.beginPath();
 	context.arc(0, 0, this.radius, 0, Math.PI*2, true);
 	context.closePath();
@@ -101,7 +101,7 @@ Particle.prototype.update = function(dt){
 }
 
 Particle.prototype.draw = function(context){
-    context.fillStyle = "#999";
+    context.fillStyle = "#bdd8db";
 	context.beginPath();
 	context.arc(0, 0, 3, 0, Math.PI*2, true);
 	context.fill();
@@ -169,7 +169,7 @@ function init(e){
 		},
 
 		draw: function(context){
-		    context.fillStyle = "#DDD";
+		    context.fillStyle = "#305558";
 			context.beginPath();
 			context.arc(0, 0, ball.radius, 0, Math.PI*2, true);
 			context.closePath();
@@ -189,7 +189,7 @@ function init(e){
 
 		draw: function(context){
 			context.font = '12px Verdana';
-    		context.fillStyle = '#AAA';
+    		context.fillStyle = '#FFF';
  			context.fillText(this.fps + ' fps', 0, 0);
 		}
 	};
@@ -201,7 +201,7 @@ function init(e){
 		y: 15,
 		draw: function(context){
 			context.font = '12px Verdana';
-    		context.fillStyle = '#AAA';
+    		context.fillStyle = '#FFF';
  			context.fillText(game_objects.length + ' Entities', 0, 0);
 		}
 	};
@@ -267,7 +267,7 @@ function update(){
  * Draws all game entities
  */
 function draw(){
-	clearScreen(buffer_canvas_ctx, '#EEE');
+	clearScreen(buffer_canvas_ctx, '#9CC5C9');
 	// use double buffering technique to remove flickr :)
 	var context = buffer_canvas_ctx;
 	for(var i = 0, l = game_objects.length; i < l; i++){
