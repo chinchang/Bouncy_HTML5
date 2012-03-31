@@ -10,7 +10,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ;(function(){
 
 
-// BALL
+/* 
+ * Ball
+ */
 function Ball(){
 	this.x = 0;
 	this.y = 0;
@@ -49,8 +51,11 @@ Ball.prototype.update = function(dt){
 	if(cond2) this.x = this.radius;
 	if(cond1 || cond2)
 		this.speed_x = -this.speed_x;
+	
+	// if ball touched ground
 	if(this.y + this.radius + this.speed_y * dt > canvas.height - ground_height){ 
 		score = 0;
+		emitParticles(5, {x: this.x, y: canvas.height - ground_height})
 		this.speed_y = -this.speed_y * cor;
 		if(Math.abs(this.speed_y * dt) < epsilon){
 			this.speed_y = 0;
@@ -64,6 +69,48 @@ Ball.prototype.containsPoint = function(x, y){
 	var dx = this.x - x;
 	var dy = this.y - y;
 	return Math.sqrt(dx * dx + dy * dy) < this.radius;
+}
+
+/*
+ * Particle
+ * @param	x 	position of particle on x axis
+ * @param	y 	position of particle on y axis
+ * @param	sx 	speed of particle on x axis
+ * @param	sy 	speed of particle on x axis
+ */
+function Particle(x, y, sx, sy){
+	this.alpha = 1;
+	this.x = x;
+	this.y = y;
+	this.alpha = 1;
+	this.speed_x = sx;
+	this.speed_y = sy;
+	this.scale_x = 1;
+	this.scale_y = 1;
+}
+
+Particle.prototype.update = function(dt){
+	//this.speed_y += gravity * dt;
+	this.x += this.speed_x * dt;
+	this.y += this.speed_y * dt;
+	this.scale_x += 6 * dt;
+	this.scale_y += 6 * dt;
+	this.alpha -= 1.5 * dt;
+	if(this.alpha <= 0)
+		removeChild(this);
+}
+
+Particle.prototype.draw = function(context){
+    context.fillStyle = "#999";
+	context.beginPath();
+	context.arc(0, 0, 3, 0, Math.PI*2, true);
+	context.fill();
+}
+
+function emitParticles(count, position){
+	for(var i=count;i--;){
+		addChild(new Particle(position.x - (Math.random() * 20 - 10), position.y, 50 - Math.random() * 100, -20 - Math.random() * 20));
+	}
 }
 
 // GAME
@@ -113,6 +160,12 @@ function init(e){
 		update: function(dt){
 			this.x = ball.x;
 			this.y = canvas.height - ground_height;
+			// shadow scale is inversely proportional to distance between
+			// ball and shadow
+			s_x =  1 - Math.abs(ball.y + ball.radius - this.y) / this.y;
+			s_y =  s_x * 0.3;
+			this.scale_x = s_x;
+			this.scale_y = s_y;
 		},
 
 		draw: function(context){
@@ -136,11 +189,23 @@ function init(e){
 
 		draw: function(context){
 			context.font = '12px Verdana';
-    		context.fillStyle = '#CCC';
+    		context.fillStyle = '#AAA';
  			context.fillText(this.fps + ' fps', 0, 0);
 		}
 	};
 	addChild(fps_text);
+
+	// Entities text
+	var entities_text = {
+		x: 50,
+		y: 15,
+		draw: function(context){
+			context.font = '12px Verdana';
+    		context.fillStyle = '#AAA';
+ 			context.fillText(game_objects.length + ' Entities', 0, 0);
+		}
+	};
+	addChild(entities_text);
 
 
 	// score text
@@ -189,7 +254,7 @@ function update(){
 	var dt = (current_time - last_time) / 1000;
 	last_time = current_time;
 
-	for(var i = 0; i < game_objects.length; i++){
+	for(var i = game_objects.length; i--;){
 		var obj = game_objects[i];
 		if(typeof obj.update == 'function'){
 			obj.update(dt);
@@ -205,14 +270,15 @@ function draw(){
 	clearScreen(buffer_canvas_ctx, '#EEE');
 	// use double buffering technique to remove flickr :)
 	var context = buffer_canvas_ctx;
-	for(var i = 0; i < game_objects.length; i++){
+	for(var i = 0, l = game_objects.length; i < l; i++){
 		var obj = game_objects[i];
 		if(typeof obj.draw == 'function'){
 			context.save();
 			if(!(isNaN(obj.x) || isNaN(obj.y))) context.translate(obj.x, obj.y); 
 			if(!(isNaN(obj.scale_x) || isNaN(obj.scale_y))) context.scale(obj.scale_x, obj.scale_y); 
+			if(!isNaN(obj.alpha)) context.globalAlpha = obj.alpha; 
 			// if(!isNaN(obj.rotation)) context.rotation(obj.rotation); 
-			obj.draw(context); 
+			obj.draw(context);
 			context.restore();
 		}
 	}
@@ -226,6 +292,15 @@ function clearScreen(context, color){
 
 function addChild(c){
 	game_objects.push(c);
+}
+
+function removeChild(c){
+	for(var i = 0, l = game_objects.length; i < l; i++)
+		if(game_objects[i] === c){
+			delete c;
+			game_objects.splice(i, 1);
+			break;
+		}
 }
 
 function setChildIndex(child, i){
