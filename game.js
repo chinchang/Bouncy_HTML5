@@ -113,6 +113,12 @@ function init(e){
 		update: function(dt){
 			this.x = ball.x;
 			this.y = canvas.height - ground_height;
+			// shadow scale is inversely proportional to distance between
+			// ball and shadow
+			s_x =  1 - Math.abs(ball.y + ball.radius - this.y) / this.y;
+			s_y =  s_x * 0.3;
+			this.scale_x = s_x;
+			this.scale_y = s_y;
 		},
 
 		draw: function(context){
