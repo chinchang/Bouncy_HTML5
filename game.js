@@ -83,7 +83,7 @@ Ball.prototype.containsPoint = function(x, y){
  * Shadow
  * @param	obj 	reference to an object to follow
  */
-function Shadow(obj){ console.log('c',obj);
+function Shadow(obj){ 
 	this.x = 0;
 	this.y = 0;
 	this.scale_x = 1;
@@ -96,7 +96,6 @@ Shadow.prototype.update = function(dt){
 	this.y = canvas.height - ground_height;
 	// shadow scale is inversely proportional to distance between
 	// ball and shadow
-	console.log(this.object)
 	s_x =  1 - Math.abs(this.object.y + this.object.radius - this.y) / this.y;
 	s_y =  s_x * 0.3;
 	this.scale_x = s_x;
