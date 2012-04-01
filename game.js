@@ -84,6 +84,12 @@ Ball.prototype.containsPoint = function(x, y){
 	return Math.sqrt(dx * dx + dy * dy) < this.radius;
 }
 
+Ball.prototype.clicked = function(cx, cy){
+	this.speed_y = -1000;
+	this.speed_x = (this.x- cx) / this.radius * 300;
+	if(this.is_on_floor) this.is_on_floor = false;
+}
+
 /*
  * Shadow
  * @param	obj 	reference to an object to follow
@@ -311,15 +317,11 @@ function onKeyUp(e){ console.log(e);
 function onClick(e){
 	if(ball1.containsPoint(e.offsetX, e.offsetY)){
 		score++;
-		ball1.speed_y = -1000;
-		ball1.speed_x = 600 - Math.random() * 1200;
-		if(ball1.is_on_floor) ball1.is_on_floor = false;
+		ball1.clicked(e.offsetX, e.offsetY);
 	}
 	else if(ball2.containsPoint(e.offsetX, e.offsetY)){
 		score++;
-		ball2.speed_y = -1000;
-		ball2.speed_x = 600 - Math.random() * 1200;
-		if(ball2.is_on_floor) ball2.is_on_floor = false;
+		ball2.clicked(e.offsetX, e.offsetY);
 	}
 }
 
