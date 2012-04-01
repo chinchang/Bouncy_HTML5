@@ -63,7 +63,8 @@ Ball.prototype.update = function(dt){
 	
 	// if ball touched ground
 	if(this.y + this.radius + this.speed_y * dt > canvas.height - ground_height){ 
-		score = 0;
+		score > highscore ? highscore = score : null;
+		score = 0
 		emitParticles(5, {x: this.x, y: canvas.height - ground_height})
 		this.speed_y = -this.speed_y * cor;
 		if(Math.abs(this.speed_y * dt) < epsilon){
@@ -158,20 +159,21 @@ function emitParticles(count, position){
 
 // GAME
 var FPS = 60,
-	canvas = null;
-	ctx = null;
-	buffer_canvas = null;
-	buffer_canvas_ctx = null;
-	game_objects = [];
+	canvas = null,
+	ctx = null,
+	buffer_canvas = null,
+	buffer_canvas_ctx = null,
+	game_objects = [],
 	ground_height = 50;
 
-var	gravity = 2000;
-	epsilon = 0.5;
-	cor = 0.7;
+var	gravity = 2000,
+	epsilon = 0.5,
+	cor = 0.7,
 	friction = 0.9;
 
-var score = 0;
-	last_time = 0;
+var score = 0,
+	highscore = 0,
+	last_time = 0,
 	last_boundboxes = [],
 	extra_boundary = 5,
 	debug = 0;
@@ -256,6 +258,19 @@ function init(e){
 		}
 	};
 	addChild(score_text);
+
+	// highscore text
+	var hscore_text = {
+		x: 370,
+		y: 110,
+		draw: function(context){
+			context.font = '40px Verdana';
+    		context.fillStyle = 'rgba(255, 255, 255, 0.5)';
+ 			context.fillText(highscore, 0, 0);
+ 			last_boundboxes.push({x: this.x, y: this.y - 20, w: 40, h: 40});
+		}
+	};
+	addChild(hscore_text);
 	
 	// bring balls forward in display list
 	setChildIndex(ball1, game_objects.length - 1)
@@ -282,13 +297,13 @@ function onKeyUp(e){ console.log(e);
 function onClick(e){
 	if(ball1.containsPoint(e.offsetX, e.offsetY)){
 		score++;
-		ball1.speed_y = -800;
+		ball1.speed_y = -1000;
 		ball1.speed_x = 600 - Math.random() * 1200;
 		if(ball1.is_on_floor) ball1.is_on_floor = false;
 	}
 	else if(ball2.containsPoint(e.offsetX, e.offsetY)){
 		score++;
-		ball2.speed_y = -800;
+		ball2.speed_y = -1000;
 		ball2.speed_x = 600 - Math.random() * 1200;
 		if(ball2.is_on_floor) ball2.is_on_floor = false;
 	}
