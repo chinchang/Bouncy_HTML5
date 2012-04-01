@@ -63,14 +63,17 @@ Ball.prototype.update = function(dt){
 	
 	// if ball touched ground
 	if(this.y + this.radius + this.speed_y * dt > canvas.height - ground_height){ 
-		score > highscore ? highscore = score : null;
-		score = 0
+		resetScore();
 		emitParticles(5, {x: this.x, y: canvas.height - ground_height})
 		this.speed_y = -this.speed_y * cor;
+
+		// check if ball's speed is less than epsilon(very slow), make it rest
 		if(Math.abs(this.speed_y * dt) < epsilon){
 			this.speed_y = 0;
 			this.y = canvas.height - ground_height - this.radius;
 			this.is_on_floor = true;
+			// save score only when ball is at rest
+			if(supportsLocalStorage === true) saveScore();
 		}
 	}
 }
@@ -176,7 +179,8 @@ var score = 0,
 	last_time = 0,
 	last_boundboxes = [],
 	extra_boundary = 5,
-	debug = 0;
+	debug = 0,
+	supportsLocalStorage = false;
 
 var ball1, ball2;
 
@@ -193,8 +197,18 @@ function init(e){
 	
 	game_objects = [];
 
-	canvas.strokeStyle = "#000";
-
+	// detect if the browser has localstorage support
+	try{
+		if(window['localStorage'] != null){
+			supportsLocalStorage = true;
+			if(!(highscore = window.localStorage.getItem('bouncy2score'))){
+				highscore = 0;
+				localStorage.setItem('bouncy2score', 0)
+			}
+		}
+	} catch(e){
+		supportsLocalStorage = false;
+	}
 	ball1 = new Ball();
 	ball1.x = 420; 
 	ball1.y = 80;
@@ -401,5 +415,13 @@ function setChildIndex(child, i){
 	}
 }
 
+function resetScore(){
+	score > highscore ? highscore = score : null;
+	score = 0;
+}
+
+function saveScore(){
+	localStorage.setItem('bouncy2score', highscore);
+}
 
 })();
