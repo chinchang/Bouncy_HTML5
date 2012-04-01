@@ -247,7 +247,7 @@ function init(e){
 			context.font = '12px Verdana';
     		context.fillStyle = '#FFF';
  			context.fillText(this.fps + ' fps', 0, 0);
- 			last_boundboxes.push({x: this.x, y: this.y - 10, w: 50, h: 20});
+ 			last_boundboxes.push({x: this.x, y: this.y - 10, w: 150, h: 20});
 		}
 	};
 	addChild(fps_text);
@@ -297,7 +297,7 @@ function init(e){
 	setChildIndex(ball2, game_objects.length - 1)
 
 	canvas.addEventListener('mousedown', onClick);
-	canvas.addEventListener('keyup', onKeyUp);
+	window.addEventListener('keypress', onKeyPress);
 
 	gameLoop();
 }
@@ -308,9 +308,10 @@ function gameLoop(){
 	setTimeout(gameLoop, 1000/FPS);
 }
 
-function onKeyUp(e){ console.log(e);
+function onKeyPress(e){
 	if(e.which == 32){
 		debug ^= 1;
+		last_boundboxes = [];
 	}
 }
 
@@ -387,10 +388,10 @@ function clearScreen(context, color){
 			context.rect(min.x - extra_boundary, min.y - extra_boundary, max.x-min.x+2*extra_boundary, max.y-min.y+2*extra_boundary);
 			context.stroke();
 		}
-		else{
+		//else{
 			context.fillRect(min.x - extra_boundary, min.y - extra_boundary, max.x-min.x+2*extra_boundary, max.y-min.y+2*extra_boundary);
 			context.fill();
-		}
+		//}
 	}
     last_boundboxes = [];
 }
