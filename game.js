@@ -38,6 +38,7 @@ Ball.prototype.draw = function(context){
 	context.arc(0, -40, this.radius-20, 0, Math.PI*2, true);
 	context.restore();
 	context.fill();
+	last_boundboxes.push({x: this.x - this.radius, y: this.y - this.radius, w: this.radius<<1, h: this.radius<<1});
 }
 
 Ball.prototype.update = function(dt){
@@ -108,6 +109,7 @@ Shadow.prototype.draw = function(context){
 	context.arc(0, 0, this.object.radius, 0, Math.PI*2, true);
 	context.closePath();
 	context.fill();
+	last_boundboxes.push({x: this.x - this.object.radius, y: this.y - this.object.radius * this.scale_y, w: (this.object.radius<<1) * this.scale_x, h: (this.object.radius<<1) * this.scale_y});
 }
 
 
@@ -127,10 +129,10 @@ function Particle(x, y, sx, sy){
 	this.speed_y = sy;
 	this.scale_x = 1;
 	this.scale_y = 1;
+	this.radius = 3;
 }
 
 Particle.prototype.update = function(dt){
-	//this.speed_y += gravity * dt;
 	this.x += this.speed_x * dt;
 	this.y += this.speed_y * dt;
 	this.scale_x += 6 * dt;
@@ -143,8 +145,9 @@ Particle.prototype.update = function(dt){
 Particle.prototype.draw = function(context){
     context.fillStyle = "#bdd8db";
 	context.beginPath();
-	context.arc(0, 0, 3, 0, Math.PI*2, true);
+	context.arc(0, 0, this.radius, 0, Math.PI*2, true);
 	context.fill();
+	last_boundboxes.push({x: this.x - this.radius * this.scale_x, y: this.y - this.radius * this.scale_y, w: (this.radius<<1) * this.scale_x, h: (this.radius<<1) * this.scale_y});
 }
 
 function emitParticles(count, position){
@@ -154,22 +157,26 @@ function emitParticles(count, position){
 }
 
 // GAME
-var FPS = 60;
-var canvas = null;
-var ctx = null;
-var buffer_canvas = null;
-var buffer_canvas_ctx = null;
-var game_objects = [];
-var ground_height = 50;
+var FPS = 60,
+	canvas = null;
+	ctx = null;
+	buffer_canvas = null;
+	buffer_canvas_ctx = null;
+	game_objects = [];
+	ground_height = 50;
 
-var ball1, ball2;
-var gravity = 2000;
-var epsilon = 0.5;
-var cor = 0.7;
-var friction = 0.9;
+var	gravity = 2000;
+	epsilon = 0.5;
+	cor = 0.7;
+	friction = 0.9;
 
 var score = 0;
-var last_time = 0;
+	last_time = 0;
+	last_boundboxes = [],
+	extra_boundary = 5,
+	debug = 0;
+
+var ball1, ball2;
 
 window.addEventListener('load', init);
 
@@ -187,13 +194,13 @@ function init(e){
 	canvas.strokeStyle = "#000";
 
 	ball1 = new Ball();
-	ball1.x = 320; 
+	ball1.x = 420; 
 	ball1.y = 80;
 
 	addChild(ball1);
 
 	ball2 = new Ball();
-	ball2.x = 50; 
+	ball2.x = 220; 
 	ball2.y = 80;
 
 	addChild(ball2);
@@ -214,9 +221,11 @@ function init(e){
 		},
 
 		draw: function(context){
+			if(!debug) return;
 			context.font = '12px Verdana';
     		context.fillStyle = '#FFF';
  			context.fillText(this.fps + ' fps', 0, 0);
+ 			last_boundboxes.push({x: this.x, y: this.y - 10, w: 50, h: 20});
 		}
 	};
 	addChild(fps_text);
@@ -226,6 +235,7 @@ function init(e){
 		x: 50,
 		y: 15,
 		draw: function(context){
+			if(!debug) return;
 			context.font = '12px Verdana';
     		context.fillStyle = '#FFF';
  			context.fillText(game_objects.length + ' Entities', 0, 0);
@@ -242,6 +252,7 @@ function init(e){
 			context.font = '240px Verdana';
     		context.fillStyle = 'rgba(255, 255, 255, 0.5)';
  			context.fillText(score, 0, 0);
+ 			last_boundboxes.push({x: this.x, y: this.y - 170, w: 120, h: 140});
 		}
 	};
 	addChild(score_text);
@@ -251,6 +262,7 @@ function init(e){
 	setChildIndex(ball2, game_objects.length - 1)
 
 	canvas.addEventListener('mousedown', onClick);
+	canvas.addEventListener('keyup', onKeyUp);
 
 	gameLoop();
 }
@@ -259,6 +271,12 @@ function gameLoop(){
 	update();
 	draw();
 	setTimeout(gameLoop, 1000/FPS);
+}
+
+function onKeyUp(e){ console.log(e);
+	if(e.which == 32){
+		debug ^= 1;
+	}
 }
 
 function onClick(e){
@@ -319,7 +337,31 @@ function draw(){
 
 function clearScreen(context, color){
     context.fillStyle = color;
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    // context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    if(!last_boundboxes.length) 
+    	context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    else{
+    	// combine individual bounding boxes into one
+    	var min = {x:canvas.width, y:canvas.height}, max = {x:0, y:0};
+	    for (var i in last_boundboxes){
+	    	var rect = last_boundboxes[i];
+	    	if(rect.x < min.x) min.x = rect.x;
+	    	if(rect.y < min.y) min.y = rect.y;
+	    	if(rect.x + rect.w > max.x) max.x = rect.x + rect.w;
+	    	if(rect.y + rect.h > max.y) max.y = rect.y + rect.h;
+	    }	
+    	context.strokeStyle = "#f00";
+		context.beginPath();
+		if(debug){
+			context.rect(min.x - extra_boundary, min.y - extra_boundary, max.x-min.x+2*extra_boundary, max.y-min.y+2*extra_boundary);
+			context.stroke();
+		}
+		else{
+			context.fillRect(min.x - extra_boundary, min.y - extra_boundary, max.x-min.x+2*extra_boundary, max.y-min.y+2*extra_boundary);
+			context.fill();
+		}
+	}
+    last_boundboxes = [];
 }
 
 function addChild(c){
